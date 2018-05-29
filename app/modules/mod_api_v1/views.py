@@ -90,6 +90,6 @@ def post_file_shares():
                                   result['username'])])
         p.communicate()
         return jsonify({'ticket_id': result['ticket_id']})
-    return jsonify({"data": "you got"})
+    return jsonify({"data": "you got, got"})
 
 
