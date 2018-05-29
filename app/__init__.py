@@ -3,7 +3,7 @@ from flask import Flask
 
 import logging
 from logging.handlers import RotatingFileHandler
-handler=RotatingFileHandler('foo.log', maxBytes=10000, backupCount=1)
+handler=RotatingFileHandler('C:\\inetpub\\logs\\SYN-FreshServiceAPI\\log.log', maxBytes=10000, backupCount=1)
 handler.setLevel(logging.DEBUG)
 
 
