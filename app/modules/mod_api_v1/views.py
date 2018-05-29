@@ -68,9 +68,28 @@ def post_file_shares():
                 sent through from Freshservice, adding the user into
                 the group.
     """
-    cmd = ["powershell", "-ExecutionPolicy", "Bypass", "C:\\deploy\\{0}.ps1".format(script)]
+    if request.method == 'POST':
+        result = request.get_json(force=True)
+        if not 'username' in result:
+            return jsonify({"error": "username not supplied"}), 422
+        if not 'file_share' in result:
+            return jsonify({"error": "file share not supplied"}), 422
+        if not 'ticket_id' in result:
+            return jsonify({"error": "ticket_id not supplied"}), 422
 
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        if not isinstance(result['username'], str):
+            return jsonify({"error": "username not string"}), 422
+        if not isinstance(result['file_share'], str):
+            return jsonify({"error": "file share not string"}), 422
+        if not isinstance(result['ticket_id'], str):
+            return jsonify({"error": "ticket_id not string"}), 422
+        import subprocess, sys
+        p = subprocess.Popen(["powershell.exe",
+                              "C:\\inetpub\\wwwroot\\FS-API1\\deploy\\file_shares.ps1 -Group {} -Username {}".format(
+                                  result['file_share'],
+                                  result['username'])])
+        p.communicate()
+        return jsonify({'ticket_id': result['ticket_id']})
+    return jsonify({"data": "you got"})
 
-    out, err = p.communicate()
-    return "hello world"
+
