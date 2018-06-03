@@ -27,9 +27,18 @@ api_v1_blueprint = Blueprint('api_v1_blueprint', __name__)
 def post_file_shares():
     """
     Title:              File Shares
-    Description:        Executes celery task to add user to appropriate group for
-                        file share access.
-                        
+    Description:        Add users to groups for file share access from Service Requests
+                        submitted through Freshservice.
+                        This endpoint is an Observer webhook in Freshservice, which is
+                        used every time an approval for a File Share Service Request is made.
+                        Observer sends the relevant data to this endpoint through a POST request.
+                        Using this data a Celery task is started which runs a Powershell script,
+                        which actually adds the user into the group. All of the logic determining
+                        which group is supplied to the Powershell script is done in this function.
+
+                        Powershell Script requirements:
+                        PSScript.ps1 -FileShare -Username -Domain
+
                         File share group is determined by adding the name of the file
                         share into a template for the group e.g.
                         
@@ -37,15 +46,15 @@ def post_file_shares():
                         becomes
                         RBAC-FILE-02-TechnicalConservatories-Read
 
-                        spaces are removed from the string sent to the API (file_share).
+                        spaces are removed from the string sent to the endpoint (file_share).
                         
-                        After task completion, user will be notified by setting the
+                        After celery task completion, user will be notified by setting the
                         the ticket to resolved and leaving a note to log off and back
                         on.
 
-                        The email parameter is need to ensure Sheerframe users will be
-                        added correctly. The Powershell script will need to connect to
-                        Sheerframe DC. And to identify the user.
+                        The email parameter is needed from Freshservice, so we can determine the
+                        domain of the user. This is to ensure Sheerframe users will be added
+                        correctly as they're on a different domain.
     URL:                /service_requests/file_shares
     METHOD:             POST
     DATA PARAMS:
@@ -82,35 +91,34 @@ def post_file_shares():
                 CODE:       422 UNPROCESSABLE ENTRY
                 CONTENT:    { "Error": "Email is not a string." }
 
-    NOTES:
-                Runs a celery task, which in turn runs a powershell script
-                which add the user to the specified group. The celery task will
-                also connect to Freshservice API and set the service request as
-                resolved, with a note explaining to log off and back on.
-                The authentication for connecting to the domain is stored within
-                the powershell scripts.
+                CODE:       401 NOT FOUND
+                CONTENT:    { "Error": "Incorrect method or URL used." }
     """
-    if request.method == 'POST':
-        result = request.get_json(force=True)
+    if request.method == 'POST':  # only accept POST requests
+        result = request.get_json(force=True)  # get all json data from request
         print(result)
-        """ validation on the request """
+        # validation on the request
         if 'file_share' not in result:
             return jsonify({"Error": "File share is missing from request."}), 422
         if 'ticket_id' not in result:
-            return jsonify(dict(Error="Ticket ID is missing from request.")), 422
+            return jsonify({"Error": "Ticket ID is missing from request."}), 422
         if 'email' not in result:
-            return jsonify(dict(Error="Email is missing from the request.")), 422
+            return jsonify({"Error": "Email is missing from the request."}), 422
 
-        if not isinstance(result['file_share'], str):
+        if not isinstance(result["file_share"], str):
             return jsonify({"Error": "File Share is not a string."}), 422
         if not isinstance(result['ticket_id'], str):
             return jsonify({"Error": "Ticket ID is not a string."}), 422
         if not isinstance(result['email'], str):
             return jsonify({"Error": "Email is not a string."}), 422
-        application.logger.info(result['file_share'])
-        
+        application.logger.info(result["file_share"])
+
+        # creates new celery task to add user to a file share group and update the ticket after
         add_user_to_file_share.delay(result['file_share'], result['email'], result['ticket_id'])
-        return jsonify({'ticket_id': result['ticket_id']})
+        return jsonify({'ticket_id': result['ticket_id']})  # returns ticket ID on successful start
+    else:
+        return jsonify({"Error": "Only POST is supported.",
+                        "Expected Data": "Ticket_ID, Email, File Share"}), 401
 
 
 application = Flask(__name__)
