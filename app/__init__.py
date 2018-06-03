@@ -111,13 +111,22 @@ def post_file_shares():
                 CODE:       422 UNPROCESSABLE ENTRY
                 CONTENT:    { "Error": "Email is not a string." }
 
+                CODE:       422 UNPROCESSABLE ENTRY
+                CONTENT:    { "Error": "Ticket ID needs to be longer than 1." }
+
+                CODE:       422 UNPROCESSABLE ENTRY
+                CONTENT:    { "Error": "File Share needs to be longer than 1." }
+
+                CODE:       422 UNPROCESSABLE ENTRY
+                CONTENT:    { "Error": "Email needs to be longer than 1." }
+
                 CODE:       401 NOT FOUND
                 CONTENT:    { "Error": "Incorrect method or URL used." }
     """
     if request.method == 'POST':  # only accept POST requests
         result = request.get_json(force=True)  # get all json data from request
         print(result)
-        # validation on the request
+        # validate all required parameters are present
         if 'file_share' not in result:
             return jsonify({"Error": "File share is missing from request."}), 422
         if 'ticket_id' not in result:
@@ -125,6 +134,7 @@ def post_file_shares():
         if 'email' not in result:
             return jsonify({"Error": "Email is missing from the request."}), 422
 
+        # validate parameters are correct type
         if not isinstance(result["file_share"], str):
             return jsonify({"Error": "File Share is not a string."}), 422
         if not isinstance(result['ticket_id'], str):
@@ -132,8 +142,13 @@ def post_file_shares():
         if not isinstance(result['email'], str):
             return jsonify({"Error": "Email is not a string."}), 422
 
-        if not result["file_share"] > 1:
+        # validate length of parameters
+        if not len(result["file_share"]) > 1:
             return jsonify({"Error": "File Share needs to be longer than 1."}), 422
+        if not len(result["email"]) > 1:
+            return jsonify({"Error": "Email needs to be longer than 1."}), 422
+        if not len(result["ticket_id"]) > 1:
+            return jsonify({"Error": "Ticket ID needs to be longer than 1."}), 422
 
         # creates new celery task to add user to a file share group and update the ticket after
         add_user_to_file_share.delay(result['file_share'], result['email'], result['ticket_id'])
