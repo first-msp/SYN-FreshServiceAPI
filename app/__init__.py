@@ -150,6 +150,8 @@ def post_file_shares():
         if not len(result["ticket_id"]) > 1:
             return jsonify({"Error": "Ticket ID needs to be longer than 1."}), 422
 
+        # UPDATED
+
         # creates new celery task to add user to a file share group and update the ticket after
         add_user_to_file_share.delay(result['file_share'], result['email'], result['ticket_id'])
         return jsonify({'ticket_id': result['ticket_id']})  # returns ticket ID on successful start
