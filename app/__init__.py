@@ -118,8 +118,8 @@ def post_file_shares():
         result = request.get_json(force=True)  # get all json data from request
         print(result)
         # validation on the request
-        #if 'file_share' not in result:
-            #return jsonify({"Error": "File share is missing from request."}), 422
+        if 'file_share' not in result:
+            return jsonify({"Error": "File share is missing from request."}), 422
         if 'ticket_id' not in result:
             return jsonify({"Error": "Ticket ID is missing from request."}), 422
         if 'email' not in result:
@@ -131,7 +131,9 @@ def post_file_shares():
             return jsonify({"Error": "Ticket ID is not a string."}), 422
         if not isinstance(result['email'], str):
             return jsonify({"Error": "Email is not a string."}), 422
-        application.logger.info(result["file_share"])
+
+        if not result["file_share"] > 1:
+            return jsonify({"Error": "File Share needs to be longer than 1."}), 422
 
         # creates new celery task to add user to a file share group and update the ticket after
         add_user_to_file_share.delay(result['file_share'], result['email'], result['ticket_id'])
