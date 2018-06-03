@@ -15,7 +15,27 @@ celeryapp = Celery('__init__', backend='rpc://', broker='pyamqp://')
 
 
 @celeryapp.task()
-def add_user_to_file_share(file_share, email, ticket_id):
+def add_user_to_file_share(file_share, username, ticket_id, domain):
+    """
+    Title:              add_user_to_file_share
+    Description:        Runs powershell script with required parameters to add a user into a
+                        group. There are Group Policies built into the domain which will then
+                        add the file share dependent on the group membership.
+    Powershell Script:  file_shares.ps1
+    Parameters:         file_share:     [STRING] (Required)
+                                        Using this and a template provided, the file share group
+                                        name can be created.
+                        username:       [STRING] (Required)
+                                        Passed to Powershell to add the right user into the group.
+                        ticket_id:      [STRING] (Required)
+                                        Used to update the ticket details and set the ticket as
+                                        resolved.
+                        domain:         [STRING] (Required)
+                                        Used in the Powershell script to determine which domain
+                                        the user comes from. Important, as wrong users could get
+                                        added if they have the same name.
+
+    """
     import subprocess, sys
     subprocess.call(["C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\powershell.exe", "C:\\inetpub\\wwwroot\\SYN-FreshServiceAPI\\deploy\\file_shares.ps1 -Email {} -FileShare {}".format(email, file_share)])
 
@@ -98,8 +118,8 @@ def post_file_shares():
         result = request.get_json(force=True)  # get all json data from request
         print(result)
         # validation on the request
-        if 'file_share' not in result:
-            return jsonify({"Error": "File share is missing from request."}), 422
+        #if 'file_share' not in result:
+            #return jsonify({"Error": "File share is missing from request."}), 422
         if 'ticket_id' not in result:
             return jsonify({"Error": "Ticket ID is missing from request."}), 422
         if 'email' not in result:
