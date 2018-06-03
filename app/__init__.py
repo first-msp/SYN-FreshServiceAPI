@@ -13,12 +13,15 @@ AUTHENTICATION_KEY = "disovnvecpic"
 _basedir = os.path.abspath(os.path.dirname(__file__))
 celeryapp = Celery('__init__', backend='rpc://', broker='pyamqp://')
 
+
 @celeryapp.task()
 def add_user_to_file_share(file_share, email, ticket_id):
     import subprocess, sys
     subprocess.call(["C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\powershell.exe", "C:\\inetpub\\wwwroot\\SYN-FreshServiceAPI\\deploy\\file_shares.ps1 -Email {} -FileShare {}".format(email, file_share)])
 
+
 api_v1_blueprint = Blueprint('api_v1_blueprint', __name__)
+
 
 @api_v1_blueprint.route('/service_requests/file_shares', methods=['POST'])
 def post_file_shares():
@@ -108,6 +111,7 @@ def post_file_shares():
         
         add_user_to_file_share.delay(result['file_share'], result['email'], result['ticket_id'])
         return jsonify({'ticket_id': result['ticket_id']})
+
 
 application = Flask(__name__)
 application.logger.addHandler(handler)
