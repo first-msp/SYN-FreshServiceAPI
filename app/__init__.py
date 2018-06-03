@@ -94,19 +94,19 @@ def post_file_shares():
         result = request.get_json(force=True)
         print(result)
         """ validation on the request """
-        if not 'file_share' in result:
-            return jsonify({ "Error": "File share is missing from request."} ), 422
-        if not 'ticket_id' in result:
-            return jsonify({ "Error": "Ticket ID is missing from request."} ), 422
-        if not 'email' in result:
-            return jsonify({ "Error": "Email is missing from the request." }), 422
+        if 'file_share' not in result:
+            return jsonify({"Error": "File share is missing from request."}), 422
+        if 'ticket_id' not in result:
+            return jsonify(dict(Error="Ticket ID is missing from request.")), 422
+        if 'email' not in result:
+            return jsonify(dict(Error="Email is missing from the request.")), 422
 
         if not isinstance(result['file_share'], str):
-            return jsonify({ "Error": "File Share is not a string." }), 422
+            return jsonify({"Error": "File Share is not a string."}), 422
         if not isinstance(result['ticket_id'], str):
-            return jsonify({ "Error": "Ticket ID is not a string." }), 422
+            return jsonify({"Error": "Ticket ID is not a string."}), 422
         if not isinstance(result['email'], str):
-            return jsonify({ "Error": "Email is not a string." }), 422
+            return jsonify({"Error": "Email is not a string."}), 422
         application.logger.info(result['file_share'])
         
         add_user_to_file_share.delay(result['file_share'], result['email'], result['ticket_id'])
