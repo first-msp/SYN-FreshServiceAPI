@@ -170,7 +170,7 @@ def post_file_shares():
 application = Flask(__name__)
 application.logger.addHandler(handler)
 application.register_blueprint(api_v1_blueprint, url_prefix='/')
-logger.info("hey this is a test")
+application.logger.info("hey this is a test")
 
 if __name__ == "__main__":
     application.run(host="0.0.0.0", port=5000, debug=True)
