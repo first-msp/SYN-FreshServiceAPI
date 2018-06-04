@@ -6,8 +6,9 @@ from celery import Celery
 import time
 import logging
 from logging.handlers import RotatingFileHandler
+logging.basicConfig()
 handler = RotatingFileHandler('C:\\inetpub\\logs\\SYN-FreshServiceAPI\\log.log', maxBytes=10000, backupCount=1)
-handler.setLevel(logging.INFO)
+handler.setLevel(logging.DEBUG)
 
 _basedir = os.path.abspath(os.path.dirname(__file__))
 celeryapp = Celery('__init__', backend='rpc://', broker='pyamqp://')
