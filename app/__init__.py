@@ -7,7 +7,7 @@ import time
 import logging
 from logging.handlers import RotatingFileHandler
 handler = RotatingFileHandler('C:\\inetpub\\logs\\SYN-FreshServiceAPI\\log.log', maxBytes=10000, backupCount=1)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.INFO)
 
 _basedir = os.path.abspath(os.path.dirname(__file__))
 celeryapp = Celery('__init__', backend='rpc://', broker='pyamqp://')
@@ -172,8 +172,6 @@ def post_file_shares():
 application = Flask(__name__)
 application.logger.addHandler(handler)
 application.register_blueprint(api_v1_blueprint, url_prefix='/')
-application.logger.info("hey this is a test")
-application.logger.error("this is an error")
 
 if __name__ == "__main__":
     application.run(host="0.0.0.0", port=5000, debug=True)
