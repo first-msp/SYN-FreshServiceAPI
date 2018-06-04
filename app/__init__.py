@@ -1,3 +1,4 @@
+#
 from __future__ import absolute_import, unicode_literals
 import os
 from flask import Flask, Blueprint, request, jsonify
@@ -5,10 +6,8 @@ from celery import Celery
 import time
 import logging
 from logging.handlers import RotatingFileHandler
-handler=RotatingFileHandler('C:\\inetpub\\logs\\SYN-FreshServiceAPI\\log.log', maxBytes=10000, backupCount=1)
-handler.setLevel(logging.INFO)
-
-AUTHENTICATION_KEY = "disovnvecpic"
+handler = RotatingFileHandler('C:\\inetpub\\logs\\SYN-FreshServiceAPI\\log.log', maxBytes=10000, backupCount=1)
+handler.setLevel(logging.DEBUG)
 
 _basedir = os.path.abspath(os.path.dirname(__file__))
 celeryapp = Celery('__init__', backend='rpc://', broker='pyamqp://')
@@ -34,10 +33,18 @@ def add_user_to_file_share(file_share, username, ticket_id, domain):
                                         Used in the Powershell script to determine which domain
                                         the user comes from. Important, as wrong users could get
                                         added if they have the same name.
-
+    Notes:              Need to work out how to get status codes from the Powershell script as basic
+                        success/failure report. Idea is 0 for success, 1 for can't find username,
+                        2 for other failure. This can atleast give an agent an idea of why the
+                        service request didn't work.
     """
     import subprocess, sys
-    subprocess.call(["C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\powershell.exe", "C:\\inetpub\\wwwroot\\SYN-FreshServiceAPI\\deploy\\file_shares.ps1 -Email {} -FileShare {}".format(email, file_share)])
+    # running the powershell script below
+    subprocess.call(["C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                     "C:\\inetpub\\wwwroot\\SYN-FreshServiceAPI\\deploy\\file_shares.ps1 "
+                     "-FileShare {} -Username {} -Domain {}".format(file_share, username, domain)])
+    # will have freshservice api interaction here to set ticket as resolved and leave note
+    print("{} {} {} {}".format(file_share, username, ticket_id, domain))
 
 
 api_v1_blueprint = Blueprint('api_v1_blueprint', __name__)
@@ -163,7 +170,7 @@ def post_file_shares():
 application = Flask(__name__)
 application.logger.addHandler(handler)
 application.register_blueprint(api_v1_blueprint, url_prefix='/')
-
+logger.info("hey this is a test")
 
 if __name__ == "__main__":
     application.run(host="0.0.0.0", port=5000, debug=True)
