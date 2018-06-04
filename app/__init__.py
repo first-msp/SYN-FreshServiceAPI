@@ -161,6 +161,8 @@ def post_file_shares():
 
         # creates new celery task to add user to a file share group and update the ticket after
         add_user_to_file_share.delay(result['file_share'], result['email'], result['ticket_id'])
+        application.logger.info("hey this is a test2")
+        application.logger.error("this is an error2")
         return jsonify({'ticket_id': result['ticket_id']})  # returns ticket ID on successful start
     else:
         return jsonify({"Error": "Only POST is supported.",
@@ -171,6 +173,7 @@ application = Flask(__name__)
 application.logger.addHandler(handler)
 application.register_blueprint(api_v1_blueprint, url_prefix='/')
 application.logger.info("hey this is a test")
+application.logger.error("this is an error")
 
 if __name__ == "__main__":
     application.run(host="0.0.0.0", port=5000, debug=True)
