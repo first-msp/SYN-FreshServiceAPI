@@ -158,16 +158,13 @@ def post_file_shares():
         if not len(result["ticket_id"]) > 1:
             return jsonify({"Error": "Ticket ID needs to be longer than 1."}), 422
 
-        # UPDATED
-
         # creates new celery task to add user to a file share group and update the ticket after
-        add_user_to_file_share.delay(result['file_share'], result['email'], result['ticket_id'])
-        application.logger.info("hey this is a test2")
-        application.logger.error("this is an error2")
+        try:
+            add_user_to_file_share.delay(result['file_share'], result['email'], result['ticket_id'])
+        except Exception as e:
+            application.logger.error("{} {} {}".format(result['file_share'], result['email'], result['ticket_id']))
+
         return jsonify({'ticket_id': result['ticket_id']})  # returns ticket ID on successful start
-    else:
-        return jsonify({"Error": "Only POST is supported.",
-                        "Expected Data": "Ticket_ID, Email, File Share"}), 401
 
 
 application = Flask(__name__)
