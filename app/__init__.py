@@ -36,8 +36,8 @@ def add_printer_to_user(ticket_id):
     ticket_info = json.loads(requests.get(ticket_info_url, auth=(api_key, password)))
     requested_items = json.loads(requests.get(requested_items_url, auth=(api_key, password)))
 
-    print "Requested by: {}".format(ticket_info['helpdesk_ticket']['requester_name'])
-    print "Request: {}".format(requested_items[0]['requested_item']['requested_item_values'])
+    print("Requested by: {}".format(ticket_info['helpdesk_ticket']['requester_name']))
+    print("Request: {}".format(requested_items[0]['requested_item']['requested_item_values']))
 
 
 @celeryapp.task()
