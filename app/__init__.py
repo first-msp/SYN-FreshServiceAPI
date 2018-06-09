@@ -45,7 +45,7 @@ def add_printer_to_user(ticket_id):
     requestor_info = json.loads(requestor_info_response.content)
 
     print("Requested by: {}".format(ticket_info['helpdesk_ticket']['requester_name']))
-    print("Requestor Email: {}".format(requestor_info['email']))
+    print("Requestor Email: {}".format(requestor_info['user']['email']))
     print("Request: {}".format(requested_items[0]['requested_item']['requested_item_values']))
 
     import subprocess, sys
