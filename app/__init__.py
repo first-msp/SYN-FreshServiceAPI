@@ -61,6 +61,20 @@ def add_printer_to_user(ticket_id):
                              "-Printer {} -Username {} -Domain {}".format(i, username, domain)])
             print(i, username, domain)
 
+    # script completes, update ticket to let user know to reboot
+    domain = "synsealitservicedesk.freshservice.com"
+    password = "x"
+
+    headers = {'Content-Type': 'application/json'}
+
+    note = {
+        "body": "Printers have been added to your user account. Please reboot your PC for this change to take "
+                "affect."
+    }
+
+    r = requests.post("https://" + domain + "/api/v2/tickets/" + ticket_id + "/reply", auth=(api_key, password),
+                      headers=headers, data=json.dumps(note))
+
 
 @celeryapp.task()
 def add_user_to_file_share(ticket_id):
