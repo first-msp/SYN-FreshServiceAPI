@@ -54,6 +54,7 @@ def add_printer_to_user(ticket_id):
     for i in requested_items[0]['requested_item']['requested_item_values'].keys():
         # running the powershell script below
         if requested_items[0]['requested_item']['requested_item_values'][i]:
+            print requested_items[0]['requested_item']['requested_item_values'][i]
             subprocess.call(["C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\powershell.exe",
                              "C:\\inetpub\\wwwroot\\SYN-FreshServiceAPI\\deploy\\printers.ps1 "
                              "-FileShare {} -Username {} -Domain {}".
