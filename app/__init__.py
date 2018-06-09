@@ -31,6 +31,7 @@ def add_printer_to_user(ticket_id):
 
     ticket_info_url = "http://{}/helpdesk/tickets/{}.json".format(domain, ticket_id)
     requested_items_url = "http://{}/helpdesk/tickets/{}/requested_items.json".format(domain, ticket_id)
+    requestor_info = "http://servicedesk.synseal.com/itil/requesters/7000356305.json"
 
     # make api requests
     ticket_info_response = requests.get(ticket_info_url, auth=(api_key, password))
@@ -38,8 +39,20 @@ def add_printer_to_user(ticket_id):
     ticket_info = json.loads(ticket_info_response.content)
     requested_items = json.loads(requested_items_response.content)
 
+    requestor_info_url = "http://{}/itil/requesters/{}.json".format(domain,
+                                                                    ticket_info['helpdesk_ticket']['requester_name'])
+    requestor_info_response = requests.get(requestor_info_url, auth=(api_key, password))
+    requestor_info = json.loads(requestor_info_response.content)
+
     print("Requested by: {}".format(ticket_info['helpdesk_ticket']['requester_name']))
+    print("Requestor Email: {}".format(requestor_info['email']))
     print("Request: {}".format(requested_items[0]['requested_item']['requested_item_values']))
+
+    import subprocess, sys
+    # running the powershell script below
+    subprocess.call(["C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                     "C:\\inetpub\\wwwroot\\SYN-FreshServiceAPI\\deploy\\printers.ps1 "
+                     "-FileShare {} -Username {} -Domain {}".format(file_share, username, domain)])
 
 
 @celeryapp.task()
