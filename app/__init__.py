@@ -51,12 +51,14 @@ def add_printer_to_user(ticket_id):
     username, domain = requestor_info['user']['email'].split("@")
 
     import subprocess, sys
-    for i in requested_items[0]['requested_item']['requested_item_values']:
+    for i in requested_items[0]['requested_item']['requested_item_values'].keys():
         # running the powershell script below
-        if i.value():
+        if requested_items[0]['requested_item']['requested_item_values'][i]:
             subprocess.call(["C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\powershell.exe",
                              "C:\\inetpub\\wwwroot\\SYN-FreshServiceAPI\\deploy\\printers.ps1 "
-                             "-FileShare {} -Username {} -Domain {}".format(i.key(), username, domain)])
+                             "-FileShare {} -Username {} -Domain {}".
+                            format(requested_items[0]['requested_item']['requested_item_values'][i],
+                                   username, domain)])
 
 
 @celeryapp.task()
