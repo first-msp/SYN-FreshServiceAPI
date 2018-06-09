@@ -12,7 +12,7 @@ $mycreds = New-Object System.Management.Automation.PSCredential ("administrator"
 $pos = $Email.IndexOf("@")
 $Username = $Email.Substring(0, $pos)
 $Domain = $Email.Substring($pos+1)
-$PrinterGroup = "Access" + $Printer
+$PrinterGroup = "Access-" + $Printer
 
 Add-ADGroupMember -Identity $PrinterGroup -Members $Username -Credential $mycreds -Server 192.168.0.40
-Write-Host "Adding " $Username " to " $Printer
+Write-Host $Printer  $Username  $Domain  $PrinterGroup
