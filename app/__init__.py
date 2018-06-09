@@ -6,6 +6,9 @@ from celery import Celery
 import time
 import logging
 from logging.handlers import RotatingFileHandler
+import requests
+import json
+import os
 logging.basicConfig()
 handler = RotatingFileHandler('C:\\inetpub\\logs\\SYN-FreshServiceAPI\\log.log', maxBytes=10000, backupCount=1)
 handler.setLevel(logging.DEBUG)
@@ -15,7 +18,30 @@ celeryapp = Celery('__init__', backend='rpc://', broker='pyamqp://')
 
 
 @celeryapp.task()
-def add_user_to_file_share(file_share, username, ticket_id, domain):
+def add_printer_to_user(ticket_id):
+    """
+
+    0:param ticket_id:
+    :return:
+    """
+    api_key = os.environ['api_key']
+    domain = "servicedesk.synseal.com"
+    password = "x"
+    ticket_id = ticket_id
+
+    ticket_info_url = "http://{}/helpdesk/tickets/{}.json".format(domain, ticket_id)
+    requested_items_url = "http://{}/helpdesk/tickets/{}/requested_items.json".format(domain, ticket_id)
+
+    # make api requests
+    ticket_info = json.loads(requests.get(ticket_info_url, auth=(api_key, password)))
+    requested_items = json.loads(requests.get(requested_items_url, auth=(api_key, password)))
+
+    print "Requested by: {}".format(ticket_info['helpdesk_ticket']['requester_name'])
+    print "Request: {}".format(requested_items[0]['requested_item']['requested_item_values'])
+
+
+@celeryapp.task()
+def add_user_to_file_share(ticket_id):
     """
     Title:              add_user_to_file_share
     Description:        Runs powershell script with required parameters to add a user into a
@@ -39,16 +65,51 @@ def add_user_to_file_share(file_share, username, ticket_id, domain):
                         2 for other failure. This can atleast give an agent an idea of why the
                         service request didn't work.
     """
+    # connect to freshservice api and pull down service request information to use
+    # information needed
+    # person who needs it their email, values of chosen printer
+
+    """
     import subprocess, sys
     # running the powershell script below
     subprocess.call(["C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\powershell.exe",
                      "C:\\inetpub\\wwwroot\\SYN-FreshServiceAPI\\deploy\\file_shares.ps1 "
                      "-FileShare {} -Username {} -Domain {}".format(file_share, username, domain)])
     # will have freshservice api interaction here to set ticket as resolved and leave note
-    print("{} {} {} {}".format(file_share, username, ticket_id, domain))
+    print("{}".format(ticket_id))"""
 
 
 api_v1_blueprint = Blueprint('api_v1_blueprint', __name__)
+
+
+@api_v1_blueprint.route('/service_requests/printers', methods=['POST'])
+def post_printers():
+    """
+
+    :return:
+    """
+    if request.method == 'POST':  # only accept POST requests
+        result = request.get_json(force=True)  # get all json data from request
+        print(result)
+        # validate all required parameters are present
+        if 'ticket_id' not in result:
+            return jsonify({"Error": "Ticket ID is missing from request."}), 422
+
+        # validate parameters are correct type
+        if not isinstance(result['ticket_id'], str):
+            return jsonify({"Error": "Ticket ID is not a string."}), 422
+
+        # validate length of parameters
+        if not len(result["ticket_id"]) > 1:
+            return jsonify({"Error": "Ticket ID needs to be longer than 1."}), 422
+
+        # creates new celery task to add user to a file share group and update the ticket after
+        try:
+            add_printer_to_user.delay(result['ticket_id'])
+        except Exception as e:
+            application.logger.error("{}".format(result['ticket_id']))
+
+        return jsonify({'ticket_id': result['ticket_id']})  # returns ticket ID on successful start
 
 
 @api_v1_blueprint.route('/service_requests/file_shares', methods=['POST'])
