@@ -33,8 +33,10 @@ def add_printer_to_user(ticket_id):
     requested_items_url = "http://{}/helpdesk/tickets/{}/requested_items.json".format(domain, ticket_id)
 
     # make api requests
-    ticket_info = json.loads(requests.get(ticket_info_url, auth=(api_key, password)))
-    requested_items = json.loads(requests.get(requested_items_url, auth=(api_key, password)))
+    ticket_info_response = requests.get(ticket_info_url, auth=(api_key, password))
+    requested_items_response = requests.get(requested_items_url, auth=(api_key, password))
+    ticket_info = json.loads(ticket_info_response.content)
+    requested_items = json.loads(requested_items_response.content)
 
     print("Requested by: {}".format(ticket_info['helpdesk_ticket']['requester_name']))
     print("Request: {}".format(requested_items[0]['requested_item']['requested_item_values']))
