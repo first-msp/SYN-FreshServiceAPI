@@ -27,7 +27,7 @@ def add_printer_to_user(ticket_id):
     api_key = os.environ['api_key']
     domain = "servicedesk.synseal.com"
     password = "x"
-    print(ticket_id)
+    ticket_id = ticket_id.split("-")[1]
 
     ticket_info_url = "http://{}/helpdesk/tickets/{}.json".format(domain, ticket_id)
     requested_items_url = "http://{}/helpdesk/tickets/{}/requested_items.json".format(domain, ticket_id)
