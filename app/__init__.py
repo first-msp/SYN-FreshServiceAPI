@@ -68,7 +68,7 @@ def add_printer_to_user(ticket_id):
     headers = {'Content-Type': 'application/json'}
 
     note = {
-        "body": "Printers have been added to your user account. Please reboot your PC for this change to take "
+        "body": "Printers have been added to your user account. Please reboot your PC for these change to take "
                 "affect."
     }
 
