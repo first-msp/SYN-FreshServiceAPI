@@ -117,6 +117,7 @@ def post_printers():
                 CODE:       422
                 CONTENT:    { "Error": "Ticket ID is missing from request" }
     """
+    print(request)
     if request.method == 'POST':  # only accept POST requests
         result = request.get_json(force=True)  # get all json data from request
         print(result)
