@@ -99,15 +99,13 @@ api_v1_blueprint = Blueprint('api_v1_blueprint', __name__)
 def post_printers():
     """
     Title:              Post Printers
-    Description:        Add users to groups for file share access from Service Requests
+    Description:        Sets of workflow to add a printer to user account
 
-    URL:                /service_requests/file_shares
+    URL:                /service_requests/printers
     METHOD:             POST
     DATA PARAMS:
                 { 'request': {
                             'ticket_id': [STRING],
-                            'file_share': [STRING],
-                            'email': [STRING]
                             }
                 }
 
@@ -116,6 +114,8 @@ def post_printers():
                 CONTENT:    { "ticket_id": [STRING] }
 
     ERROR RESPONSE:
+                CODE:       422
+                CONTENT:    { "Error": "Ticket ID is missing from request" }
     """
     if request.method == 'POST':  # only accept POST requests
         result = request.get_json(force=True)  # get all json data from request
@@ -132,7 +132,6 @@ def post_printers():
         if not len(result["ticket_id"]) > 1:
             return jsonify({"Error": "Ticket ID needs to be longer than 1."}), 422
 
-        # creates new celery task to add user to a file share group and update the ticket after
         try:
             add_printer_to_user.delay(result['ticket_id'])
         except Exception as e:
