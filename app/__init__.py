@@ -20,19 +20,15 @@ celeryapp = Celery('__init__', backend='rpc://', broker='pyamqp://')
 @celeryapp.task()
 def add_printer_to_user(ticket_id):
     """
-    Title:              add_user_to_file_share
-    Description:        Runs powershell script with required parameters to add a user into a
-                        group. There are Group Policies built into the domain which will then
-                        add the file share dependent on the group membership.
-    Powershell Script:  file_shares.ps1
-    Parameters:         file_share:     [STRING] (Required)
-                                        Using this and a template provided, the file share group
-                                        name can be created.
-                        username:       [STRING] (Required)
-                                        Passed to Powershell to add the right user into the group.
-                        ticket_id:      [STRING] (Required)
-                                        Used to update the ticket details and set the ticket as
-                                        resolved.
+    Title:              Printers
+    Description:        Takes ticket_id from freshservice webhook from Printers service request. Connects to Fresh
+                        service API to retrieve service request items and requestor details. In Freshservice all of
+                        the printers are shown as checkboxes, all values are sent here in JSON format, being
+                        True or False. For every value (printer) sent, the powershell script printers.ps1 is ran.
+                        The ps1 script will add user the user in to the appropriate group to add the printer.
+    Powershell Script:  printers.ps1
+    Parameters:         Printer:        [STRING] (Required)
+                        Username:       [STRING] (Required)
                         domain:         [STRING] (Required)
                                         Used in the Powershell script to determine which domain
                                         the user comes from. Important, as wrong users could get
