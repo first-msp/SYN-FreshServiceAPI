@@ -25,7 +25,9 @@ def add_printer_to_user(ticket_id):
                         service API to retrieve service request items and requestor details. In Freshservice all of
                         the printers are shown as checkboxes, all values are sent here in JSON format, being
                         True or False. For every value (printer) sent, the powershell script printers.ps1 is ran.
-                        The ps1 script will add user the user in to the appropriate group to add the printer.
+                        The ps1 script will add user the user in to the appropriate group to add the printer. Will
+                        then connect to API to add a reply to the ticket letting the user know the request is completed
+                        and to restart their machines.
     Powershell Script:  printers.ps1
     Parameters:         Printer:        [STRING] (Required)
                         Username:       [STRING] (Required)
@@ -96,7 +98,7 @@ api_v1_blueprint = Blueprint('api_v1_blueprint', __name__)
 @api_v1_blueprint.route('/service_requests/printers', methods=['POST'])
 def post_printers():
     """
-    Title:              File Shares
+    Title:              Post Printers
     Description:        Add users to groups for file share access from Service Requests
 
     URL:                /service_requests/file_shares
